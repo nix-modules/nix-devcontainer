@@ -1,6 +1,6 @@
 {
   "name": "basic",
-  "dockerComposeFile": "../docker-compose.yml",
+  "dockerComposeFile": "./docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
   "features": {

@@ -12,7 +12,7 @@
     perSystem = { pkgs, ... }: {
       nix-devcontainer = {
         enable = true;
-        file = ./.devcontainer/devcontainer.json;
+        file = toString ./.devcontainer/devcontainer.json;
         packages = [ pkgs.curl pkgs.jq ];
       };
     };

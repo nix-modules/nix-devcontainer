@@ -50,7 +50,7 @@ Both connect to the same postgres instance.
     perSystem = { pkgs, ... }: {
       nix-devcontainer = {
         enable = true;
-        file = ./.devcontainer/devcontainer.json;
+        file = toString ./.devcontainer/devcontainer.json;
         packages = [ pkgs.nodejs_20 pkgs.postgresql pkgs.redis ];
       };
     };

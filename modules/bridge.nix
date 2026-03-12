@@ -11,7 +11,7 @@
         name = "nix-devcontainer-bridge";
         runtimeInputs = [ pkgs.docker pkgs.jq ];
         text = ''
-          DEVCONTAINER_JSON="${toString cfg.file}"
+          DEVCONTAINER_JSON="${cfg.file}"
           ${builtins.readFile ../scripts/compose.sh}
         '';
       };

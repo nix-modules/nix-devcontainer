@@ -5,24 +5,27 @@
     nix-devcontainer.url = "github:nix-modules/nix-devcontainer";
   };
 
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-    imports = [ inputs.nix-devcontainer.flakeModule ];
-    systems = [ "x86_64-linux" "aarch64-darwin" ];
+  outputs =
+    inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [ inputs.nix-devcontainer.flakeModule ];
+      systems = [
+        "x86_64-linux"
+        "aarch64-darwin"
+      ];
 
-    perSystem = { pkgs, ... }: {
-      nix-devcontainer = {
-        enable = true;
-        file = ./.devcontainer/devcontainer.json;
-        packages = [
-          pkgs.go
-          pkgs.gopls
-          pkgs.gotools           # goimports, godoc, etc.
-          pkgs.golangci-lint
-          pkgs.postgresql        # psql, pg_dump, pg_restore
-          pkgs.migrate           # migrate -database $DATABASE_URL -path ./migrations up
-        ];
-        # localEnv.DATABASE_URL = "..."; # optional override
-      };
+      perSystem =
+        { pkgs, ... }:
+        {
+          nix-devcontainer = {
+            enable = true;
+            file = toString ./.devcontainer/devcontainer.json;
+            packages = [
+              pkgs.go
+              pkgs.postgresql # psql, pg_dump, pg_restore
+            ];
+            # localEnv.DATABASE_URL = "..."; # optional override
+          };
+        };
     };
-  };
 }

@@ -1,6 +1,6 @@
 {
   "name": "golang-postgres",
-  "dockerComposeFile": "../docker-compose.yml",
+  "dockerComposeFile": "./docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
   "features": {
@@ -22,9 +22,7 @@
   "forwardPorts": [8080],
   "customizations": {
     "vscode": {
-      "extensions": [
-        "golang.go"
-      ]
+      "extensions": ["golang.go"]
     }
   }
 }

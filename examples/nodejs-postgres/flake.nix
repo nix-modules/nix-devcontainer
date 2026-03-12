@@ -12,7 +12,7 @@
     perSystem = { pkgs, ... }: {
       nix-devcontainer = {
         enable = true;
-        file = ./.devcontainer/devcontainer.json;
+        file = toString ./.devcontainer/devcontainer.json;
         packages = [ pkgs.nodejs_20 pkgs.postgresql pkgs.redis ];
         # localEnv.SOME_SECRET = "...";  # optional, for local-only vars
       };

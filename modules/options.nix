@@ -4,11 +4,15 @@
       enable = lib.mkEnableOption "nix-devcontainer devcontainer bridge";
 
       file = lib.mkOption {
-        type = lib.types.path;
-        default = ./.devcontainer/devcontainer.json;
+        type = lib.types.str;
         description = ''
-          Path to devcontainer.json. Resolved at eval time.
-          The dockerComposeFile field inside it is resolved relative to this file's directory.
+          Absolute path to devcontainer.json as a string.
+          Use toString to prevent Nix from copying it to the store:
+
+            file = toString ./.devcontainer/devcontainer.json;
+
+          The dockerComposeFile field inside it is resolved relative to
+          this file's directory on the actual filesystem.
         '';
       };
 

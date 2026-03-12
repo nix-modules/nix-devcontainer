@@ -9,9 +9,9 @@
       # pkgs.writeShellApplication runs shellcheck and sets strict shell options automatically.
       packages.nix-devcontainer-bridge = pkgs.writeShellApplication {
         name = "nix-devcontainer-bridge";
-        runtimeInputs = [ pkgs.docker pkgs.jq ];
+        runtimeInputs = [ pkgs.docker pkgs.jq pkgs.yq-go ];
         text = ''
-          DEVCONTAINER_JSON="${cfg.file}"
+          DEVCONTAINER_JSON=${lib.escapeShellArg cfg.file}
           ${builtins.readFile ../scripts/compose.sh}
         '';
       };

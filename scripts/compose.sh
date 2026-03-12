@@ -1,7 +1,7 @@
 # DEVCONTAINER_JSON is injected by nix at build time (see modules/bridge.nix)
 DEVCONTAINER_DIR="$(dirname "$DEVCONTAINER_JSON")"
 
-# Wait up to TIMEOUT seconds for a container port to be mapped and return the host port.
+# Wait up to 30 seconds for a container port to be mapped and return the host port.
 # docker compose port only succeeds once the container is running.
 _ndc_wait_for_port() {
   local compose_args=("$@")
@@ -32,7 +32,7 @@ if [ -z "$COMPOSE_RELATIVE" ]; then
   while IFS= read -r entry; do
     VAR=$(echo "$entry" | jq -r '.key')
     VAL=$(echo "$entry" | jq -r '.value')
-    export "$VAR=$VAL"
+    declare -x "$VAR=$VAL"
     echo "  $VAR"
   done < <(jq -c '.containerEnv // {} | to_entries[]' "$DEVCONTAINER_JSON")
   return 0
@@ -48,13 +48,11 @@ if [ -f "$NIX_COMPOSE_FILE" ]; then
   echo "[nix-devcontainer] Starting services with nix overlay..."
   docker compose -f "$COMPOSE_FILE" -f "$NIX_COMPOSE_FILE" up -d --quiet-pull
 
-  # Read nix companion only (not merged) to find services with port bindings
-  NIX_ONLY_JSON=$(docker compose -f "$NIX_COMPOSE_FILE" config --format json)
-
+  # Use yq to parse the nix overlay directly — docker compose config would reject
+  # the overlay as invalid (no image: field) since it only adds port bindings.
   echo "[nix-devcontainer] Host ports:"
-  while IFS= read -r line; do
-    SERVICE=$(echo "$line" | jq -r '.service')
-    CONTAINER_PORT=$(echo "$line" | jq -r '.containerPort')
+  while IFS=$'\t' read -r SERVICE CONTAINER_PORT; do
+    [ -z "$SERVICE" ] || [ -z "$CONTAINER_PORT" ] && continue
     HOST_PORT=$(_ndc_wait_for_port -f "$COMPOSE_FILE" -f "$NIX_COMPOSE_FILE" \
       port "$SERVICE" "$CONTAINER_PORT") || {
       echo "  ${SERVICE}:${CONTAINER_PORT} — timeout waiting for container (skipped)"
@@ -64,10 +62,13 @@ if [ -f "$NIX_COMPOSE_FILE" ]; then
       --arg from "${SERVICE}:${CONTAINER_PORT}" --arg to "localhost:${HOST_PORT}" \
       '. + [{from: $from, to: $to}]')
     echo "  ${SERVICE}:${CONTAINER_PORT} → localhost:${HOST_PORT}"
-  done < <(echo "$NIX_ONLY_JSON" | jq -c '
-    .services | to_entries[] | .key as $svc | .value.ports[]? |
-    { service: $svc, containerPort: (.target | tostring) }
-  ')
+  done < <(yq -r '
+    .services | to_entries[] |
+    .key as $svc |
+    .value.ports[]? |
+    split(":") | last as $port |
+    [$svc, $port] | @tsv
+  ' "$NIX_COMPOSE_FILE")
 else
   echo "[nix-devcontainer] Starting base services..."
   docker compose -f "$COMPOSE_FILE" up -d --quiet-pull
@@ -80,7 +81,7 @@ while IFS= read -r entry; do
   VAL=$(echo "$entry" | jq -r '.value')
   REWRITTEN=$(echo "$VAL" | jq -r --argjson rules "$REWRITE_RULES" \
     '$rules | reduce .[] as $r (.; gsub($r.from; $r.to))')
-  export "$VAR=$REWRITTEN"
+  declare -x "$VAR=$REWRITTEN"
   if [ "$REWRITTEN" != "$VAL" ]; then
     echo "  $VAR (rewritten)"
   else

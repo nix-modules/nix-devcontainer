@@ -21,6 +21,9 @@
           # Run the bridge script — starts services, discovers ports, rewrites and exports
           # containerEnv vars from devcontainer.json (service:port → localhost:hostPort)
           source "$(command -v nix-devcontainer-bridge)"
+          # writeShellApplication sets -euo pipefail — unset them so the
+          # interactive shell is not left in strict mode after sourcing.
+          set +o errexit +o nounset +o pipefail
 
           echo "[nix-devcontainer] Environment ready"
         '';

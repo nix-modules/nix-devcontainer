@@ -62,6 +62,7 @@ if [ -f "$NIX_COMPOSE_FILE" ]; then
       --arg from "${SERVICE}:${CONTAINER_PORT}" --arg to "localhost:${HOST_PORT}" \
       '. + [{from: $from, to: $to}]')
     echo "  ${SERVICE}:${CONTAINER_PORT} → localhost:${HOST_PORT}" >&2
+  # shellcheck disable=SC2016 -- $svc and $port are yq variables, not bash variables
   done < <(yq -r '
     .services | to_entries[] |
     .key as $svc |

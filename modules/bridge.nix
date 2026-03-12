@@ -2,7 +2,7 @@
 let cfg = config.nix-devcontainer;
 in lib.mkIf cfg.enable {
 
-  # Wrap scripts/bridge.sh into a nix package.
+  # Wrap scripts/compose.sh into a nix package.
   # DEVCONTAINER_JSON path is baked in at eval time — no runtime path lookup needed.
   # pkgs.writeShellApplication runs shellcheck and sets strict shell options automatically.
   packages.nix-devcontainer-bridge = pkgs.writeShellApplication {
@@ -10,7 +10,7 @@ in lib.mkIf cfg.enable {
     runtimeInputs = [ pkgs.docker pkgs.jq ];
     text = ''
       DEVCONTAINER_JSON="${toString cfg.file}"
-      ${builtins.readFile ../scripts/bridge.sh}
+      ${builtins.readFile ../scripts/compose.sh}
     '';
   };
 

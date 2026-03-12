@@ -12,7 +12,7 @@
 
       devShells.default = pkgs.mkShell {
         # User packages + bridge script added to PATH
-        packages = cfg.packages ++ [ config.packages.nix-devcontainer-bridge ];
+        packages = cfg.packages ++ [ config.packages.nix-devcontainer ];
 
         shellHook = ''
           # Export local-only vars (secrets, machine-specific overrides)
@@ -20,7 +20,7 @@
 
           # Run the bridge script — starts services, discovers ports, rewrites and exports
           # containerEnv vars from devcontainer.json (service:port → localhost:hostPort)
-          eval "$(nix-devcontainer-bridge ${lib.escapeShellArg cfg.file})"
+          eval "$(nix-devcontainer ${lib.escapeShellArg cfg.file})"
 
           echo "[nix-devcontainer] Environment ready"
         '';

@@ -4,13 +4,12 @@
     let cfg = config.nix-devcontainer;
     in lib.mkIf cfg.enable {
 
-      # Wrap scripts/compose.sh into a nix package.
-      # DEVCONTAINER_JSON path is baked in at eval time — no runtime path lookup needed.
+      # Wrap scripts/nix-devcontainer.sh into a nix package.
       # pkgs.writeShellApplication runs shellcheck and sets strict shell options automatically.
-      packages.nix-devcontainer-bridge = pkgs.writeShellApplication {
-        name = "nix-devcontainer-bridge";
+      packages.nix-devcontainer = pkgs.writeShellApplication {
+        name = "nix-devcontainer";
         runtimeInputs = [ pkgs.docker pkgs.jq pkgs.yq-go ];
-        text = builtins.readFile ../scripts/compose.sh;
+        text = builtins.readFile ../scripts/nix-devcontainer.sh;
       };
 
     };

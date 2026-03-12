@@ -19,7 +19,7 @@
           pkgs.gotools           # goimports, godoc, etc.
           pkgs.golangci-lint
           pkgs.postgresql        # psql, pg_dump, pg_restore
-          pkgs.golang-migrate    # migrate -database $DATABASE_URL -path ./migrations up
+          pkgs.migrate           # migrate -database $DATABASE_URL -path ./migrations up
         ];
         # localEnv.DATABASE_URL = "..."; # optional override
       };

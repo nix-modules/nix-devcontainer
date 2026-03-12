@@ -1,0 +1,15 @@
+# Nix developer overlay — only adds host port bindings.
+# Image, environment, and volumes are inherited from docker-compose.yml via Docker Compose merge.
+# 0:PORT means Docker assigns a random host port — no conflicts between projects.
+services:
+  postgresql:
+    ports:
+      - "0:5432"
+
+  redis:
+    ports:
+      - "0:6379"
+
+  # app service intentionally omitted — nix developers run the app locally in their shell.
+  # devcontainer.json forwardPorts may expose app ports for VS Code users, but the nix
+  # developer starts the app themselves (e.g. npm run dev). No bridging needed.

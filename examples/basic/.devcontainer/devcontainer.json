@@ -1,0 +1,20 @@
+{
+  "name": "basic",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/nix:1": {
+      "version": "latest",
+      "flakeUri": "."
+    }
+  },
+  "containerEnv": {
+    "REDIS_URL": "redis://redis:6379"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": []
+    }
+  }
+}

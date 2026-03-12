@@ -1,0 +1,11 @@
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/base:debian
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # No host ports here — VS Code users access redis:6379 directly inside network

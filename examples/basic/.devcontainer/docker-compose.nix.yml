@@ -1,0 +1,7 @@
+# Nix developer overlay — only adds host port bindings.
+# Image, environment, and volumes are inherited from docker-compose.yml via Docker Compose merge.
+# 0:PORT means Docker assigns a random host port — no conflicts between projects.
+services:
+  redis:
+    ports:
+      - "0:6379"

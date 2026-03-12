@@ -1,0 +1,26 @@
+{
+  "name": "nodejs-postgres",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/nix:1": {
+      "version": "latest",
+      "flakeUri": "."
+    }
+  },
+  "containerEnv": {
+    "DATABASE_URL": "postgresql://dev:dev@postgresql:5432/mydb",
+    "REDIS_URL": "redis://redis:6379",
+    "NODE_ENV": "development"
+  },
+  "forwardPorts": [3000],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-typescript-next",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}

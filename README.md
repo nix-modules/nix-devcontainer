@@ -210,3 +210,4 @@ This installs the same packages that `nix-devcontainer.packages` provides to loc
 
 - [`examples/basic/`](examples/basic/) — single Redis service, minimal setup
 - [`examples/nodejs-postgres/`](examples/nodejs-postgres/) — Node.js app with PostgreSQL and Redis
+- [`examples/golang-postgres/`](examples/golang-postgres/) — Go app with PostgreSQL, psql client, and golang-migrate

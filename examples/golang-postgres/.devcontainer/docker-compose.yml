@@ -1,0 +1,20 @@
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/base:debian
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+
+  postgresql:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # No host ports here — VS Code users access postgresql:5432 directly inside network
+
+volumes:
+  postgres-data:

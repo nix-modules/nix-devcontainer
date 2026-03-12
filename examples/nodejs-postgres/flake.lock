@@ -42,11 +42,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1773298164,
-        "narHash": "sha256-apUkmtXZXHPn2Q3kUmu4BpLZF5TCR9cB9NL6w24/gec=",
+        "lastModified": 1773298313,
+        "narHash": "sha256-kGAnP40O5KcaGyvXDYEOuv08SrRhEh86/Fg3lEnK+GQ=",
         "owner": "nix-modules",
         "repo": "nix-devcontainer",
-        "rev": "c229fbc8b6422d41b88067acc145e8c6bbf67216",
+        "rev": "533de81d600e4299dd2e394902102722d0743e1e",
         "type": "github"
       },
       "original": {

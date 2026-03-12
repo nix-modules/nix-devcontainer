@@ -1,0 +1,30 @@
+{
+  "name": "golang-postgres",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/nix:1": {
+      "version": "latest",
+      "flakeUri": "."
+    }
+  },
+  "containerEnv": {
+    "DATABASE_URL": "postgres://dev:dev@postgresql:5432/appdb?sslmode=disable",
+    "PGHOST": "postgresql",
+    "PGPORT": "5432",
+    "PGUSER": "dev",
+    "PGPASSWORD": "dev",
+    "PGDATABASE": "appdb",
+    "GOPATH": "/go",
+    "GOFLAGS": "-mod=mod"
+  },
+  "forwardPorts": [8080],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go"
+      ]
+    }
+  }
+}

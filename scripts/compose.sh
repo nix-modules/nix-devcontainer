@@ -1,4 +1,4 @@
-# DEVCONTAINER_JSON is injected by nix at build time (see modules/bridge.nix)
+DEVCONTAINER_JSON="$1"
 DEVCONTAINER_DIR="$(dirname "$DEVCONTAINER_JSON")"
 
 # Wait up to 30 seconds for a container port to be mapped and return the host port.
@@ -19,7 +19,7 @@ _ndc_wait_for_port() {
   return 1
 }
 
-# Step 0: resolve compose file path from devcontainer.json
+# Resolve compose file path from devcontainer.json.
 # dockerComposeFile may be a string or an array — normalise to first element.
 COMPOSE_RELATIVE=$(jq -r '
   if .dockerComposeFile | type == "array" then .dockerComposeFile[0]
@@ -27,15 +27,15 @@ COMPOSE_RELATIVE=$(jq -r '
   end' "$DEVCONTAINER_JSON")
 
 if [ -z "$COMPOSE_RELATIVE" ]; then
-  # No compose file — export containerEnv as-is, no port rewriting
-  echo "[nix-devcontainer] No dockerComposeFile — exporting containerEnv as-is"
+  # No compose file — emit containerEnv as-is, no port rewriting
+  echo "[nix-devcontainer] No dockerComposeFile — exporting containerEnv as-is" >&2
   while IFS= read -r entry; do
     VAR=$(echo "$entry" | jq -r '.key')
     VAL=$(echo "$entry" | jq -r '.value')
-    declare -x "$VAR=$VAL"
-    echo "  $VAR"
+    printf 'export %s=%q\n' "$VAR" "$VAL"
+    echo "  $VAR" >&2
   done < <(jq -c '.containerEnv // {} | to_entries[]' "$DEVCONTAINER_JSON")
-  return 0
+  exit 0
 fi
 
 COMPOSE_FILE="$(realpath "$DEVCONTAINER_DIR/$COMPOSE_RELATIVE")"
@@ -45,23 +45,23 @@ NIX_COMPOSE_FILE="${COMPOSE_FILE%.yml}.nix.yml"
 REWRITE_RULES="[]"
 
 if [ -f "$NIX_COMPOSE_FILE" ]; then
-  echo "[nix-devcontainer] Starting services with nix overlay..."
-  docker compose -f "$COMPOSE_FILE" -f "$NIX_COMPOSE_FILE" up -d --quiet-pull
+  echo "[nix-devcontainer] Starting services with nix overlay..." >&2
+  docker compose -f "$COMPOSE_FILE" -f "$NIX_COMPOSE_FILE" up -d --quiet-pull >&2
 
-  # Use yq to parse the nix overlay directly — docker compose config would reject
-  # the overlay as invalid (no image: field) since it only adds port bindings.
-  echo "[nix-devcontainer] Host ports:"
+  # Use yq to parse the nix overlay directly — docker compose config rejects
+  # overlay-only files that have no image: field.
+  echo "[nix-devcontainer] Host ports:" >&2
   while IFS=$'\t' read -r SERVICE CONTAINER_PORT; do
     [ -z "$SERVICE" ] || [ -z "$CONTAINER_PORT" ] && continue
     HOST_PORT=$(_ndc_wait_for_port -f "$COMPOSE_FILE" -f "$NIX_COMPOSE_FILE" \
       port "$SERVICE" "$CONTAINER_PORT") || {
-      echo "  ${SERVICE}:${CONTAINER_PORT} — timeout waiting for container (skipped)"
+      echo "  ${SERVICE}:${CONTAINER_PORT} — timeout waiting for container (skipped)" >&2
       continue
     }
     REWRITE_RULES=$(echo "$REWRITE_RULES" | jq \
       --arg from "${SERVICE}:${CONTAINER_PORT}" --arg to "localhost:${HOST_PORT}" \
       '. + [{from: $from, to: $to}]')
-    echo "  ${SERVICE}:${CONTAINER_PORT} → localhost:${HOST_PORT}"
+    echo "  ${SERVICE}:${CONTAINER_PORT} → localhost:${HOST_PORT}" >&2
   done < <(yq -r '
     .services | to_entries[] |
     .key as $svc |
@@ -70,21 +70,22 @@ if [ -f "$NIX_COMPOSE_FILE" ]; then
     [$svc, $port] | @tsv
   ' "$NIX_COMPOSE_FILE")
 else
-  echo "[nix-devcontainer] Starting base services..."
-  docker compose -f "$COMPOSE_FILE" up -d --quiet-pull
+  echo "[nix-devcontainer] Starting base services..." >&2
+  docker compose -f "$COMPOSE_FILE" up -d --quiet-pull >&2
 fi
 
-# Export containerEnv from devcontainer.json with rewrite rules applied
-echo "[nix-devcontainer] Exporting environment:"
+# Emit containerEnv from devcontainer.json with rewrite rules applied.
+# stdout only — captured by eval in the shellHook.
+echo "[nix-devcontainer] Exporting environment:" >&2
 while IFS= read -r entry; do
   VAR=$(echo "$entry" | jq -r '.key')
   VAL=$(echo "$entry" | jq -r '.value')
   REWRITTEN=$(echo "$VAL" | jq -r --argjson rules "$REWRITE_RULES" \
     '$rules | reduce .[] as $r (.; gsub($r.from; $r.to))')
-  declare -x "$VAR=$REWRITTEN"
+  printf 'export %s=%q\n' "$VAR" "$REWRITTEN"
   if [ "$REWRITTEN" != "$VAL" ]; then
-    echo "  $VAR (rewritten)"
+    echo "  $VAR (rewritten)" >&2
   else
-    echo "  $VAR"
+    echo "  $VAR" >&2
   fi
 done < <(jq -c '.containerEnv // {} | to_entries[]' "$DEVCONTAINER_JSON")

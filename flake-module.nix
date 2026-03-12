@@ -1,3 +1,3 @@
 { ... }: {
-  imports = [ ./modules/options.nix ./modules/bridge.nix ./modules/shell.nix ];
+  imports = [ ./modules/options.nix ./modules/scripts.nix ./modules/shell.nix ];
 }
